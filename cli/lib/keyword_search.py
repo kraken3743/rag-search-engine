@@ -4,6 +4,7 @@ from nltk.stem import PorterStemmer
 from collections import defaultdict, Counter
 import os
 import pickle
+import math
 stemmer = PorterStemmer()
 
 class InvertedIndex:
@@ -50,13 +51,31 @@ class InvertedIndex:
         with open(self.term_frequencies_path, "rb") as f:
             self.term_frequencies = pickle.load(f)
     def get_tf(self, doc_id, term):
-        term = stemmer.stem(term.lower())
-        return self.term_frequencies.get(term, {}).get(doc_id, 0)
+        token = tokenize_text(term)
+        if len(token) != 1:
+            raise ValueError("Term should be a single token after processing")
+        return self.term_frequencies[doc_id][token[0]]
+    def get_idf(self, term):
+        token = tokenize_text(term)
+        if len(token) != 1:
+            raise ValueError("Term should be a single token after processing")  
+        doc_count = len(self.docmap)
+        token = token[0]
+        term_match_doc_count = len(self.index[token])
+        return math.log((doc_count + 1) / (term_match_doc_count + 1))  # noqa: F821
+        pass
+
+def idf_command(term):
+    idx = InvertedIndex()
+    idx.load()
+    idf = idx.get_idf(term)
+    print(f"IDF of {term}: {idf:.2f}")
 
 def tf_command(doc_id, term): 
     idx = InvertedIndex()
     idx.load()
-    print(idx.get_tf(doc_id, term))  # noqa: F821
+    idf = idx.get_idf(term)  # to ensure term is processed the same way as during indexing
+    print(f"IDF of {term}: {idf:.2f}")  # noqa: F821
 
 def build_command():
     docs = InvertedIndex()
