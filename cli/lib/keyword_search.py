@@ -1,7 +1,7 @@
 from lib.search_utils import load_movies, load_stopwords, CACHE_PATH
 import string
 from nltk.stem import PorterStemmer
-from collections import defaultdict
+from collections import defaultdict, Counter
 import os
 import pickle
 stemmer = PorterStemmer()
@@ -10,12 +10,17 @@ class InvertedIndex:
     def __init__(self):
         self.index = defaultdict(set) #token : [doc_id1, doc_id2]
         self.docmap = {} #docmap to actual ID mapping
+        self.term_frequencies = defaultdict(Counter) #token : frequency across all documents
+        
         self.index_path = CACHE_PATH/'index.pkl'
         self.docmap_path = CACHE_PATH/'docmap.pkl'
+        self.term_frequencies_path = CACHE_PATH / "term_frequencies.pkl"
+
     def __add_doc(self, doc_id, text):
         tokens = tokenize_text(text)
         for token in set(tokens):
             self.index[token].add(doc_id)
+            self.term_frequencies[token].update([doc_id])
 
     def get_doc(self, term):
         return sorted(self.index[term]) 
@@ -34,20 +39,34 @@ class InvertedIndex:
             pickle.dump(self.index, f)
         with open(self.docmap_path, 'wb') as f:
             pickle.dump(self.docmap, f)
+        with open(self.term_frequencies_path, 'wb') as f:
+            pickle.dump(self.term_frequencies, f)   
     
     def load(self):
         with open(self.index_path, "rb") as f:
             self.index=pickle.load(f)
         with open(self.docmap_path, "rb") as f:
             self.docmap = pickle.load(f)
-    
+        with open(self.term_frequencies_path, "rb") as f:
+            self.term_frequencies = pickle.load(f)
+    def get_tf(self, doc_id, term):
+        term = stemmer.stem(term.lower())
+        return self.term_frequencies.get(term, {}).get(doc_id, 0)
+
+def tf_command(doc_id, term): 
+    idx = InvertedIndex()
+    idx.load()
+    print(idx.get_tf(doc_id, term))  # noqa: F821
+
 def build_command():
     docs = InvertedIndex()
     docs.build()
     docs.save()
     # doc_ids = docs.get_doc("merida")
     # if doc_ids:
-    #     print(f"First document for token 'merida' = {doc_ids[0]}")
+    #     first_doc_id = doc_ids[0]
+    #     movie = docs.docmap[first_doc_id]
+    #     print(f"First document for token 'merida' = {movie}")
 
 def clean_text(text):
     text = text.lower()
@@ -76,26 +95,14 @@ def has_matching_token(query_tokens,movie_tokens):
                 return True
     return False
 
-def search_command(query, n_results=5):
-    idx = InvertedIndex()
-    idx.load()
-    seen, res=set(), []
+def search_command(query, n_results):
+    movies = load_movies()
+    res=[]
     query_tokens = tokenize_text(query)
-    for query_token in query_tokens:
-        matching_doc_ids = idx.get_doc(query_token)
-        for matching_doc_id in matching_doc_ids:
-            if matching_doc_id in seen:
-                continue
-            seen.add(matching_doc_id)
-            matching_doc = idx.docmap[matching_doc_id]
-            res.append(matching_doc)
-            if len(res) >= n_results:
-                return res
-    return res
-    # for movie in movies:
-    #     movie_tokens = tokenize_text(movie["title"])
-    #     if has_matching_token(query_tokens, movie_tokens):
-    #         res.append(movie)
-    #     if len(res)==n_results:
-    #         break
-    # return  res
+    for movie in movies:
+        movie_tokens = tokenize_text(movie["title"])
+        if has_matching_token(query_tokens, movie_tokens):
+            res.append(movie)
+        if len(res)==n_results:
+            break
+    return  res

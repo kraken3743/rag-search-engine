@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from lib.keyword_search import (search_command, build_command) 
+from lib.keyword_search import (search_command, build_command, tf_command) 
 import argparse
 
 
@@ -10,6 +10,10 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
     search_parser = subparsers.add_parser("build", help="Build pkl file")
+
+    search_parser = subparsers.add_parser("tf", help="Get term frequency for a document and term")
+    search_parser.add_argument("doc_id", type=int, help="Document ID")
+    search_parser.add_argument("term", type=str, help="Term to get frequency/counts for")
 
     args = parser.parse_args()
 
@@ -22,6 +26,8 @@ def main() -> None:
                 print(f"{i} {result['title']}")
         case "build":
             build_command()
+        case "tf":
+            tf_command(args.doc_id, args.term)
 
             
         case _:
