@@ -76,7 +76,37 @@ class InvertedIndex:
         tf = self.get_tf(doc_id, term)
         idf = self.get_idf(term)
         return tf*idf
+    
+    def get_bm25(self, doc_id, term):
+        tf = self.get_bm25_tf(doc_id, term)
+        idf = self.get_bm25_idf(term)
+        return tf*idf
+    
+    def bm25_search(self, query, limit=5):
+        query_tokens = tokenize_text(query)
+        scores = defaultdict(float)
 
+        for doc_id in self.docmap:
+            score = 0.0
+            for token in query_tokens:
+                if token in self.index:
+                    score += self.get_bm25(doc_id, token)
+            scores[doc_id] = score
+
+        sorted_scores = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+        top_docs = sorted_scores[:limit]
+
+        format_results = []
+        for doc_id, score in top_docs:
+            movie = self.docmap[doc_id]
+            format_results.append({
+                "doc_id": doc_id,
+                "title": movie["title"],
+                "score": score
+            })
+
+        return format_results
+    
 
 
     def build(self):
@@ -107,7 +137,13 @@ class InvertedIndex:
             self.term_frequencies=pickle.load(f)
         with open(self.doc_length_path, "rb") as f:
             self.doc_length=pickle.load(f)
-    
+
+def bm25_search(query, limit=5):
+    idx = InvertedIndex()
+    idx.load()
+    return idx.bm25_search(query, limit)
+
+
 def bm25tf_command(doc_id, term, k1=BM25_K1, b=BM25_B):
     idx = InvertedIndex()
     idx.load()
