@@ -5,7 +5,8 @@ from lib.semantic_search import (
     verify_model,
     embed_text,
     verify_embedding,
-    embed_query_text
+    embed_query_text,
+    search
 )
 
 def main():
@@ -22,9 +23,15 @@ def main():
     embedquery_parser = subparsers.add_parser("embedquery", help="Encode query with embedding model")
     embedquery_parser.add_argument("query", type=str, help="User query to be encoded")
 
+    search_parser = subparsers.add_parser("search", help="Search for relevant documents based on query")
+    search_parser.add_argument("query", type=str, help="User query to search for")
+    search_parser.add_argument("--limit", type=int, default=5, help="Number of search results to return")
+
     args = parser.parse_args()
 
     match args.command:
+        case "search":
+            search(args.query, args.limit)
         case "embedquery":
             embed_query_text(args.query)
         case "verify_embeddings":
