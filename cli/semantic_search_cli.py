@@ -4,7 +4,8 @@ import argparse
 from lib.semantic_search import (
     verify_model,
     embed_text,
-    verify_embedding
+    verify_embedding,
+    embed_query_text
 )
 
 def main():
@@ -16,11 +17,16 @@ def main():
     embed_parser = subparsers.add_parser("embed_text", help="Encode text with embedding model ")
     embed_parser.add_argument("text", type=str, help="text to be encoded")
 
-    embed_parser = subparsers.add_parser("verify_embeddings", help="verify")
+    embed_parser = subparsers.add_parser("verify_embeddings", help="verify embedding model loads properly")
+
+    embedquery_parser = subparsers.add_parser("embedquery", help="Encode query with embedding model")
+    embedquery_parser.add_argument("query", type=str, help="User query to be encoded")
 
     args = parser.parse_args()
 
     match args.command:
+        case "embedquery":
+            embed_query_text(args.query)
         case "verify_embeddings":
             verify_embedding()
         case "embed_text":
