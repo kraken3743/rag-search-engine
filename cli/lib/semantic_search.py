@@ -12,7 +12,7 @@ class SemanticSearch:
         self.embeddings = None
         self.documents = None
         self.document_map = {}
-        self.embeddings_path = Path("cache/movie_embeddings.npy")
+        self.embeddings_path = Path("cache/movie_embeddings.npy")       
 
     def build_embeddings(self, documents):
         self.documents = documents
@@ -59,6 +59,23 @@ class SemanticSearch:
                 'description':doc['description']
             })
         return res
+
+def fixed_size_chunking(text, chunk_size=200):
+    words = text.split()
+    chunks = []
+    for i in range(0, len(words), chunk_size): 
+        chunks.append(" ".join(words[i:i+chunk_size]))
+    return chunks
+
+def chunk_text(text, chunk_size=200):
+    chunks = fixed_size_chunking(text, chunk_size)
+    print(f"Chunking {len(text)} characters")
+    for i, chunk in enumerate(chunks):
+        print(f"{i+1}. {chunk}")
+
+
+
+    
 
 def search(query, limit=5):
     ss = SemanticSearch()
