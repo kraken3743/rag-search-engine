@@ -3,6 +3,7 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 from pathlib import Path
 from lib.search_utils import load_movies
+import re
 
 load_dotenv()
 
@@ -59,6 +60,24 @@ class SemanticSearch:
                 'description':doc['description']
             })
         return res
+
+def semantic_chunking(text,  overlap=0, max_chunk_size=4):
+    sentences = re.split(r"(?<=[.!?])\s+", text)
+    chunks = []
+    step_size = max_chunk_size - overlap
+    for i in range(0, len(sentences), step_size): 
+        chunk_sentences = sentences[i:i + max_chunk_size] 
+        if len(chunk_sentences) <= overlap:
+            break
+        chunks.append(" ".join(chunk_sentences)) 
+    return chunks
+
+def chunk_text_semantic(text, overlap=0, max_chunk_size=4):
+    chunks = semantic_chunking(text, overlap, max_chunk_size)
+    print(f"Semantically chunking {len(text)} characters")
+    for i, chunk in enumerate(chunks):
+        print(f"{i+1}. {chunk}")
+
 
 def fixed_size_chunking(text, overlap, chunk_size=200):
     words = text.split()
