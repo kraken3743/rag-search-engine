@@ -10,7 +10,8 @@ from lib.semantic_search import (
     chunk_text,
     chunk_text_semantic,
     semantic_chunking,
-    embed_chunks
+    embed_chunks,
+    search_chunked
 )
 
 def main():
@@ -27,9 +28,9 @@ def main():
     embedquery_parser = subparsers.add_parser("embedquery", help="Encode query with embedding model")
     embedquery_parser.add_argument("query", type=str, help="User query to be encoded")
 
-    search_parser = subparsers.add_parser("search", help="Search for relevant documents based on query")
-    search_parser.add_argument("query", type=str, help="User query to search for")
-    search_parser.add_argument("--limit", type=int, default=5, help="Number of search results to return")
+    search_chunked_parser = subparsers.add_parser("search_chunked", help="Search for relevant documents based on query")
+    search_chunked_parser.add_argument("query", type=str, help="User query to search for")
+    search_chunked_parser.add_argument("--limit", type=int, default=5, help="Number of search results to return")
 
     chunk_parser = subparsers.add_parser("chunk", help="Chunk text into smaller pieces") 
     chunk_parser.add_argument("text", type=str, help="Document to be chunked") 
@@ -42,11 +43,13 @@ def main():
     chunk_text_semantic_parser.add_argument("--max-chunk-size", type=int, default=4, help="Number of words per chunk")
 
     embed_chunks_parser = subparsers.add_parser("embed_chunks", help="Embed chunks of documents")
-    
+
 
     args = parser.parse_args()
 
     match args.command:
+        case "search_chunked":
+            search_chunked(args.query, args.limit)
         case "embed_chunks": 
             embed_chunks()
         case "semantic_chunk":
