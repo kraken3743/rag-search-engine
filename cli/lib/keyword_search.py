@@ -102,7 +102,8 @@ class InvertedIndex:
             format_results.append({
                 "doc_id": doc_id,
                 "title": movie["title"],
-                "score": score
+                "score": score,
+                "description": self.docmap[doc_id]["description"]
             })
 
         return format_results
