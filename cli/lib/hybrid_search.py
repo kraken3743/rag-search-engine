@@ -1,8 +1,9 @@
 import os
-
+from lib.llm import generate_content, correct_spelling
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
+
 
 def weighted_search(query, alpha=0.5, limit=5):
     documents = load_movies()
@@ -14,10 +15,17 @@ def weighted_search(query, alpha=0.5, limit=5):
         print(f"BM25: {r['bm25_score']}, Semantic: {r['sem_score']}")
         print(r['description'][:100])
 
-def rrf_search(query, k=60, limit=5):
+def rrf_search(query, k=60, limit=5, enhance=None):
     documents = load_movies()
     hs = HybridSearch(documents)
+    
+    match enhance:
+        case "spell":
+            new_query = correct_spelling(query)
+            print(f"Enhanced query (spell): '{query}' -> '{new_query}'\n")
+            query = new_query
     results = hs.rrf_search(query, k, limit)
+
     for idx, r in enumerate(results[:limit], start=1):
         print(f"{idx} {r['title']}")
         print(f"RRF Score: {r['rrf_score']}")

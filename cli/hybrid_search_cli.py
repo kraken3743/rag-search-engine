@@ -18,12 +18,13 @@ def main() -> None:
     rrf_parser.add_argument("query", type=str, help="User query to find relavent docs form")
     rrf_parser.add_argument("--k", type=int, default=60, help="k value for RRF score calculation")
     rrf_parser.add_argument("--limit", type=int, default=5, help="num results to return")
+    rrf_parser.add_argument("--enhance", type=str, choices=["spell"], help="Query enhancement method",)
 
     args = parser.parse_args()
 
     match args.command:
         case "rrf-search":
-            rrf_search(args.query, args.k, args.limit)
+            rrf_search(args.query, args.k, args.limit, args.enhance)
 
         case"weighted-search":
             weighted_search(args.query, args.alpha, args.limit)
