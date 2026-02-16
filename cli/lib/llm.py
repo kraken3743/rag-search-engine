@@ -13,7 +13,6 @@ client = genai.Client(api_key=api_key)
 
 def generate_content(prompt, query):
     prompt = prompt.format(query=query)
-    prompt = "Why is Boot.dev such a great place to learn about RAG? Use one paragraph maximum."
     response = client.models.generate_content(model=model, contents=prompt)
     return(response.text)
 
@@ -24,6 +23,11 @@ def correct_spelling(query):
 
 def rewrite_query(query):
     with open(PROMPTS_PATH/'rewrite.md', 'r') as f:
+        prompt = f.read()   
+    return generate_content(prompt, query)
+
+def expand_query(query):
+    with open(PROMPTS_PATH/'expand.md', 'r') as f:
         prompt = f.read()   
     return generate_content(prompt, query)
 

@@ -1,5 +1,5 @@
 import os
-from lib.llm import generate_content, correct_spelling, rewrite_query
+from lib.llm import generate_content, correct_spelling, rewrite_query, expand_query
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
@@ -27,6 +27,10 @@ def rrf_search(query, k=60, limit=5, enhance=None):
         case "rewrite":
             new_query = rewrite_query(query)
             print(f"Enhanced query (rewrite): '{query}' -> '{new_query}'\n")
+            query = new_query
+        case "expand":
+            new_query = expand_query(query)
+            print(f"Enhanced query (expand): '{query}' -> '{new_query}'\n")
             query = new_query
     
     results = hs.rrf_search(query, k, limit)
