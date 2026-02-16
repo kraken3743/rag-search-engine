@@ -3,6 +3,7 @@ from lib.llm import generate_content, augment_prompt
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
+from lib.rerank import individual_rerank
 
 
 def weighted_search(query, alpha=0.5, limit=5):
@@ -15,15 +16,19 @@ def weighted_search(query, alpha=0.5, limit=5):
         print(f"BM25: {r['bm25_score']}, Semantic: {r['sem_score']}")
         print(r['description'][:100])
 
-def rrf_search(query, k=60, limit=5, enhance=None):
-    documents = load_movies()
-    hs = HybridSearch(documents)
+def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None):
+    movies = load_movies()
+    hs = HybridSearch(movies)
     if enhance:
         new_query = augment_prompt(query, enhance)
         print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
         query = new_query
-    
-    results = hs.rrf_search(query, k, limit)
+    rrf_limit = limit
+    #rrf_limit = limit * 5 if rerank_method else 5
+    results = hs.rrf_search(query, k, rrf_limit)
+    if rerank_method:
+        results = individual_rerank(query, results)
+        print(f"Reranking top {limit} results using individual method...")
 
     for idx, r in enumerate(results[:limit], start=1):
         print(f"{idx} {r['title']}")
@@ -55,8 +60,8 @@ class HybridSearch:
     def rrf_search(self, query, k, limit=10):
         bm25_results =  self._bm25_search(query, limit*500)
         sem_results = self.semantic_search.search_chunks(query, limit*500)
-        combined_results = combine_search_results(bm25_results, sem_results, k)
-        return rrf_combine_results(bm25_results, sem_results, k)
+        combined_results = rrf_combine_search_results(bm25_results, sem_results, k)
+        return combined_results[:limit]
 
 def normalize_search_results(results):
     scores =[r['score']for r in results]
@@ -73,7 +78,7 @@ def rrf_final_score(r1, r2, k):
         return rrf_score(r1, k) + rrf_score(r2, k)
     return 0.0
 
-def rrf_combine_results(bm25_results, sem_results, k):
+def rrf_combine_search_results(bm25_results, sem_results, k):
     scores = {}
 
     for rank, result in enumerate(bm25_results,start=1):

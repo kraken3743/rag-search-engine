@@ -22,13 +22,13 @@ def generate_content(prompt, query):
     return(response.text)
 
 def correct_spelling(query):
-    augment_prompt(query, "spelling")
+    return augment_prompt(query, "spelling")
 
 def rewrite_query(query):
-    augment_prompt(query, "rewrite")
+    return augment_prompt(query, "rewrite")
 
 def expand_query(query):
-    augment_prompt(query, "expand")
+    return augment_prompt(query, "expand")
 
 if __name__ == "__main__":
     generate_content()
