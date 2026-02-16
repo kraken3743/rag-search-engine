@@ -1,5 +1,5 @@
 import os
-from lib.llm import generate_content, correct_spelling, rewrite_query, expand_query
+from lib.llm import generate_content, augment_prompt
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
@@ -18,20 +18,10 @@ def weighted_search(query, alpha=0.5, limit=5):
 def rrf_search(query, k=60, limit=5, enhance=None):
     documents = load_movies()
     hs = HybridSearch(documents)
-    
-    match enhance:
-        case "spell":
-            new_query = correct_spelling(query)
-            print(f"Enhanced query (spell): '{query}' -> '{new_query}'\n")
-            query = new_query
-        case "rewrite":
-            new_query = rewrite_query(query)
-            print(f"Enhanced query (rewrite): '{query}' -> '{new_query}'\n")
-            query = new_query
-        case "expand":
-            new_query = expand_query(query)
-            print(f"Enhanced query (expand): '{query}' -> '{new_query}'\n")
-            query = new_query
+    if enhance:
+        new_query = augment_prompt(query, enhance)
+        print(f"Enhanced query ({enhance}): '{query}' -> '{new_query}'\n")
+        query = new_query
     
     results = hs.rrf_search(query, k, limit)
 
