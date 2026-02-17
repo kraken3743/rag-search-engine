@@ -31,8 +31,9 @@ class InvertedIndex:
             return 0.0
         ttl = 0
         for l in lengths:
-            ttl += l
-        return ttl/len(lengths) 
+            ttl += l  #l is the length of each doc, adding them gives length of all docs combined
+        return ttl/len(lengths) #len(lengths) is the number of docs,avg = total length of all docs / number of docs
+
 
     def get_doc(self, term):
         return sorted(self.index[term])
@@ -86,7 +87,7 @@ class InvertedIndex:
         query_tokens = tokenize_text(query)
         scores = defaultdict(float)
 
-        for doc_id in self.docmap:
+        for doc_id in self.docmap:  #go through each document
             score = 0.0
             for token in query_tokens:
                 if token in self.index:

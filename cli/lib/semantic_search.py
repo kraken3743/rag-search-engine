@@ -15,7 +15,11 @@ class SemanticSearch:
         self.embeddings = None
         self.documents = None
         self.document_map = {}
-        self.embeddings_path = Path("cache/movie_embeddings.npy")       
+        self.embeddings_path = Path("cache/movie_embeddings.npy")
+        # self.documents: A list of movie dictionaries (id, title, description) 
+        # where the index matches the order of the vectors in self.embeddings.
+        # self.document_map: A dictionary that maps movie IDs to their movie 
+        # data for fast lookups when you only have a specific ID.      
 
     def build_embeddings(self, documents):
         self.documents = documents
@@ -42,7 +46,7 @@ class SemanticSearch:
     def generate_embedding(self, text):
         if not text or not text.strip():
             raise ValueError("Input text cannot be empty or whitespace")
-        return self.model.encode([text])[0]
+        return self.model.encode([text])[0] #encode method expects a list of inputs, but we're only passing in one, so we wrap it in a list. It also returns a corresponding list as output, but we only care about the first element because we're only passing in one input
         
     def search(self, query, limit=5):
         if self.embeddings is None or self.documents is None:
@@ -74,7 +78,8 @@ class ChunkedSemanticSearch(SemanticSearch):
 
     def build_chunk_embeddings(self, documents):
         self.documents = documents
-        self.document_map = {doc['id']: doc for doc in documents}
+        # Create a hash map for O(1) lookups of documents by ID
+        self.document_map = {doc['id']: doc for doc in documents}#loop thru documents and for each movie, grab the ID
         
         all_chunks = []
         chunk_metadata = []
@@ -90,7 +95,7 @@ class ChunkedSemanticSearch(SemanticSearch):
                                        "total_chunks": len(_chunks)})
         self.chunk_embeddings =  self.model.encode(all_chunks, show_progress_bar=True)
         self.chunk_metadata = chunk_metadata
-        self.chunk_embeddings_path.parent.mkdir(parents = True, exist_ok=True)
+        self.chunk_embeddings_path.parent.mkdir(parents = True, exist_ok=True)#make sure the cache directory exists before we try to save the file, if it doesn't exist, it will create it. parents=True allows it to create any necessary parent directories as well, and exist_ok=True means that if the directory already exists, it won't raise an error
         np.save(self.chunk_embeddings_path, self.chunk_embeddings) 
         with open(self.chunk_metadata_path, 'w') as f:
             json.dump({"chunks": chunk_metadata, "total_chunks": len(all_chunks)}, f, indent=2)
@@ -109,7 +114,7 @@ class ChunkedSemanticSearch(SemanticSearch):
     def search_chunks(self, query: str, limit: int = 10):
         query_emb = self.generate_embedding(query)
         chunk_scores = []
-        movie_scores = defaultdict(lambda: 0)
+        movie_scores = defaultdict(lambda: 0) #lambda is just a way to create a default value for any key that doesn't exist in the dictionary, in this case we want the default score to be 0, so if we try to access a key that hasn't been added to the movie_scores dictionary yet, it will return 0 instead of throwing an error. This is useful because when we calculate the similarity score for each chunk, we want to keep track of the highest score for each movie, and if we haven't seen that movie before, we want its initial score to be 0.
         for idx in range(len(self.chunk_embeddings)):
             chunk_embedding = self.chunk_embeddings[idx]
             metadata = self.chunk_metadata['chunks'][idx]
@@ -120,7 +125,8 @@ class ChunkedSemanticSearch(SemanticSearch):
                 'chunk_idx': cidx,
                 'score': sim  })
             movie_scores[midx] = max(movie_scores[midx], sim)
-        movie_scores_sorted = sorted(movie_scores.items(), key=lambda x: x[1], reverse=True) 
+        movie_scores_sorted = sorted(movie_scores.items(), key=lambda x: x[1], reverse=True) #changes dict into tuples, [1:2] --> [(1,2)] then  we can sort 
+        res = []
         res = []
         for midx,score in movie_scores_sorted[:limit]:
             doc = self.documents[midx]
@@ -178,9 +184,9 @@ def fixed_size_chunking(text, overlap, chunk_size=200):
     words = text.split()
     chunks = []
     step_size = chunk_size - overlap
-    for i in range(0, len(words), step_size):
+    for i in range(0, len(words), step_size):  #it will go from 0 to whatever the chunk size i
         chunk_words = words[i:i + chunk_size]
-        if len(chunk_words) <= overlap:
+        if len(chunk_words) <= overlap:  #if last chunk is smaller than the overlap, we can just break
             break 
         chunks.append(" ".join(chunk_words))
     return chunks

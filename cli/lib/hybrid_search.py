@@ -28,7 +28,7 @@ def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None):
     results = hs.rrf_search(query, k, rrf_limit)
     match rerank_method:
         case "individual":
-            results = individual_rerank(query, results)
+            results = individual_rerank(query, results)#take in query and previous results
             print(f"Reranking top {limit} results using individual method...")
         case "batch":
             results = batch_rerank(query, results)
@@ -60,13 +60,13 @@ class HybridSearch:
 
     def weighted_search(self, query, alpha, limit=5):
         bm25_results =  self._bm25_search(query, limit*500)
-        sem_results = self.semantic_search.search_chunks(query, limit*500)
+        sem_results = self.semantic_search.search_chunks(query, limit*500)#cutting computation by searching not all docs
         combined_results = combine_search_results(bm25_results, sem_results, alpha)
         return combined_results
 
     def rrf_search(self, query, k, limit=10):
         bm25_results =  self._bm25_search(query, limit*500)
-        sem_results = self.semantic_search.search_chunks(query, limit*500)
+        sem_results = self.semantic_search.search_chunks(query, limit*500)#cutting computation by searching not all docs
         combined_results = rrf_combine_search_results(bm25_results, sem_results, k)
         return combined_results[:limit]
 
