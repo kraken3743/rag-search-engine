@@ -3,8 +3,7 @@ from lib.llm import generate_content, augment_prompt
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
-from lib.rerank import individual_rerank, batch_rerank
-
+from lib.rerank import individual_rerank, batch_rerank, cross_encoder_rerank
 
 def weighted_search(query, alpha=0.5, limit=5):
     documents = load_movies()
@@ -27,21 +26,25 @@ def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None):
     #rrf_limit = limit * 5 if rerank_method else 5
     results = hs.rrf_search(query, k, rrf_limit)
     match rerank_method:
-        case "individual":
-            results = individual_rerank(query, results)#take in query and previous results
-            print(f"Reranking top {limit} results using individual method...")
-        case "batch":
-            results = batch_rerank(query, results)
-            print(f"Reranking top {limit} results using batch method...")
-        case _:
-            pass
+          case "individual":
+               results = individual_rerank(query, results) #take in query and previous results
+               print(f"Reranking top {limit} results using individual method...")
+          case "batch":
+               results = batch_rerank(query, results)
+               print(f"Reranking top {limit} results using batch method...")
+          case "cross_encoder":
+               results = cross_encoder_rerank(query, results)
+               print(f"Reranking top {limit} results using cross_encoder method...")
+          case _:
+               pass
             
-
-    for idx, r in enumerate(results[:limit], start=1):
-        print(f"{idx} {r['title']}")
-        print(f"RRF Score: {r['rrf_score']}")
-        print(f"BM25 Rank: {r['bm25_rank']}, Semantic Rank: {r['sem_rank']}")
-        print(r['description'][:100])
+    for idx, r in enumerate(results[:limit], start =1):
+           print(f"{idx}. {r['title']}")
+           print(f"RRF Score: {r['rrf_score']}")
+           if rerank_method == "cross_encoder" and 'cross_encoder_score' in r:
+                print(f"Cross Encoder Score: {r['cross_encoder_score']}")
+           print(f"BM25 Rank: {r['bm25_rank']}, Semantic Rank: {r['sem_rank']}")
+           print(r['description'][:100])
 
 class HybridSearch:
     def __init__(self, documents):
