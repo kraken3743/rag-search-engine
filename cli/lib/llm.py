@@ -23,15 +23,6 @@ def generate_content(prompt, query, **kwargs):
     response = client.models.generate_content(model=model, contents=prompt)
     return response.text
 
-# def correct_spelling(query):
-#     return augment_prompt(query, 'spelling')
-
-# def rewrite_query(query):
-#     return augment_prompt(query, 'rewrite')
-
-# def expand_query(query):
-#     return augment_prompt(query, 'expand')
-
 def llm_judge(query, formatted_results):
     with open(PROMPTS_PATH/'llm_judge.md', 'r') as f:
         prompt = f.read()
@@ -53,6 +44,9 @@ def summarize_documents(query, documents):
 
 def doc_citations(query, documents):
     return _rag(query, documents, 'answer_with_citations.md')
+
+def detailed_question_answering(query, documents):
+    return _rag(query, documents, 'answer_question_detailed.md')
 
 
 
