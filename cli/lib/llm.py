@@ -1,4 +1,6 @@
+from google import genai
 import os
+import json
 from dotenv import load_dotenv
 from lib.search_utils import PROMPTS_PATH
 
@@ -16,19 +18,18 @@ def augment_prompt(query, type):
         prompt = f.read()
     return generate_content(prompt, query)
 
-def generate_content(prompt, query):
-    prompt = prompt.format(query=query)
+def generate_content(prompt, query, **kwargs):
+    prompt = prompt.format(query=query, **kwargs)
     response = client.models.generate_content(model=model, contents=prompt)
-    return(response.text)
+    return response.text
 
-def correct_spelling(query):
-    return augment_prompt(query, "spelling")
+def llm_judge(query, formatted_results):
+    with open(PROMPTS_PATH/'llm_judge.md', 'r') as f:
+        prompt = f.read()
+    results =  generate_content(prompt, query,formatted_results=formatted_results)
+    results = json.loads(results)
+    return results
 
-def rewrite_query(query):
-    return augment_prompt(query, "rewrite")
 
-def expand_query(query):
-    return augment_prompt(query, "expand")
 
-if __name__ == "__main__":
-    generate_content()
+

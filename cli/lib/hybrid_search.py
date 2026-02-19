@@ -1,5 +1,5 @@
 import os
-from lib.llm import generate_content, augment_prompt
+from lib.llm import generate_content, augment_prompt, llm_judge
 from .keyword_search import InvertedIndex
 from .semantic_search import ChunkedSemanticSearch
 from lib.search_utils import load_movies
@@ -15,7 +15,7 @@ def weighted_search(query, alpha=0.5, limit=5):
         print(f"BM25: {r['bm25_score']}, Semantic: {r['sem_score']}")
         print(r['description'][:100])
 
-def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None, debug=None):
+def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None, debug=None, evaluate=None):
     if debug: print(f"Debugging for movie containing {debug}")
     movies = load_movies()
     hs = HybridSearch(movies)
@@ -52,7 +52,7 @@ def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None, debug=Non
                 found = True
                 break
         print(f"Reranking post for {debug} is {idx if found else 'not found'}")
-            
+    if evaluate: formatted_results = []      
     for idx, r in enumerate(results[:limit], start =1):
            print(f"{idx}. {r['title']}")
            print(f"RRF Score: {r['rrf_score']}")
@@ -60,7 +60,13 @@ def rrf_search(query, k=60, limit=5, enhance=None, rerank_method=None, debug=Non
                 print(f"Cross Encoder Score: {r['cross_encoder_score']}")
            print(f"BM25 Rank: {r['bm25_rank']}, Semantic Rank: {r['sem_rank']}")
            print(r['description'][:100])
-
+           print('-'*25)
+           if evaluate: formatted_results.append(f"<result id={idx}>{r['title']}: {r['description'][:100]}</result>")
+    if evaluate:
+        llm_results = llm_judge(query, "\n".join(formatted_results))
+        for idx, r in enumerate(results[:limit], start =1):
+           print(f"{idx}. {r['title']}: {llm_results[idx-1]}/3")
+        
 class HybridSearch:
     def __init__(self, documents):
         self.documents = documents
