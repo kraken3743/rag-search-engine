@@ -36,7 +36,7 @@ cd rag-search-engine
 bash download_data.sh
 ```
 
-- Or grab it manually from the [Releases page](https://github.com/kraken3743/rag-search-engine/releases).
+- Or grab it manually from the [Releases page](https://github.com/kraken3743/rag-search-engine/releases/tag/v1.0.0).
 
 > The `download_data.sh` script will fetch `data/movies.json`, `data/golden_dataset.json`, and `data/stopwords.txt`.
 
