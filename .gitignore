@@ -1,5 +1,7 @@
 #DATA
 data/
+data.zip
+
 # Python-generated files
 __pycache__/
 *.py[oc]
@@ -15,3 +17,4 @@ wheels/
 .env
 
 cache/
+

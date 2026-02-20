@@ -4,7 +4,7 @@
 
 set -e
 
-REPO="Vinzette/rag-search-engine"
+REPO="kraken3743/rag-search-engine"
 ASSET="data.zip"
 DEST="data"
 

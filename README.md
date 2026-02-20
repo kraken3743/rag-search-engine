@@ -1,4 +1,4 @@
-🎬 RAG Search Engine
+## 🎬 RAG Search Engine
 
 A powerful movie discovery engine that showcases the complete journey through modern information retrieval — starting from classic keyword matching and evolving all the way to intelligent retrieval-augmented generation powered by LLMs.
 
@@ -31,7 +31,7 @@ The `data/` directory (movies, golden dataset, stopwords) is **not** checked int
 - Download from the latest GitHub release:
 
 ```bash
-git clone https://github.com/<your-username>/rag-search-engine.git
+git clone https://github.com/kraken3743/rag-search-engine.git
 cd rag-search-engine
 bash download_data.sh
 ```
