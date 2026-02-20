@@ -45,8 +45,7 @@ def image_search_command(image_fpath, limit=5):
         print(f"{r['description'][:100]}")  
 
 def verify_image_embedding(image_fpath):
-    movies = load_movies
-    ms = MultiModalSearch(movies)
+    ms = MultiModalSearch()
     embedding = ms.embed_image(image_fpath)
     print(f"Embedding shape: {embedding.shape[0]} dimensions")
 
