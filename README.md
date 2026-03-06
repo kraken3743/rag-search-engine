@@ -35,7 +35,6 @@ git clone https://github.com/<your-username>/rag-search-engine.git
 cd rag-search-engine
 bash download_data.sh
 ```
-
 - Or grab it manually from the [Releases page](https://github.com/<your-username>/rag-search-engine/releases).
 
 > The `download_data.sh` script will fetch `data/movies.json`, `data/golden_dataset.json`, and `data/stopwords.txt`.
