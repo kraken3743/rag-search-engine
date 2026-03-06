@@ -31,11 +31,11 @@ The `data/` directory (movies, golden dataset, stopwords) is **not** checked int
 - Download from the latest GitHub release:
 
 ```bash
-git clone https://github.com/<your-username>/rag-search-engine.git
+git clone https://github.com/kraken3743/rag-search-engine.git
 cd rag-search-engine
 bash download_data.sh
 ```
-- Or grab it manually from the [Releases page](https://github.com/<your-username>/rag-search-engine/releases).
+- Or grab it manually from the [Releases page](https://github.com/kraken3743/rag-search-engine/releases/tag/v1.0.0).
 
 > The `download_data.sh` script will fetch `data/movies.json`, `data/golden_dataset.json`, and `data/stopwords.txt`.
 
@@ -70,7 +70,7 @@ To use RAG, query enhancement, reranking, and image features, you need a Google 
 **Setup:**
 1. Clone the repo and install dependencies:
    ```bash
-   git clone https://github.com/<your-username>/rag-search-engine.git
+   git clone https://github.com/kraken3743/rag-search-engine.git
    cd rag-search-engine
    uv sync
    ```
@@ -78,7 +78,7 @@ To use RAG, query enhancement, reranking, and image features, you need a Google 
    ```bash
    bash download_data.sh
    ```
-   Or download manually from the [Releases page](https://github.com/<your-username>/rag-search-engine/releases).
+   Or download manually from the [Releases page](https://github.com/kraken3743/rag-search-engine/releases).
 3. Add your Gemini API key to `.env`:
    ```
    GEMINI_API_KEY=your_api_key_here
